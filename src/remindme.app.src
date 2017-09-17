@@ -1,16 +1,14 @@
 {application, remindme,
- [{description, "An OTP application"},
+ [{description, "Application which will remind you anything you want"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, { remindme_app, []}},
+  {mod, {remindme_app, []}},
   {applications,
    [kernel,
     stdlib
    ]},
   {env,[]},
   {modules, []},
-
-  {maintainers, []},
   {licenses, ["Apache 2.0"]},
   {links, []}
  ]}.

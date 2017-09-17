@@ -1,35 +1,22 @@
-%%%-------------------------------------------------------------------
-%% @doc remindme top level supervisor.
-%% @end
-%%%-------------------------------------------------------------------
-
 -module(remindme_sup).
+-export([start/2, start_link/2, init/1, loop/1]).
 
--behaviour(supervisor).
+start(Mod, Args) ->
+    spawn(?MODULE, init, [{Mod, Args}]).
 
-%% API
--export([start_link/0]).
+start_link(Mod, Args) ->
+    spawn_link(?MODULE, init, [{Mod, Args}]).
 
-%% Supervisor callbacks
--export([init/1]).
+init({Mod, Args}) ->
+    process_flag(trap_exit, true),
+    loop({Mod, start_link, Args}).
 
--define(SERVER, ?MODULE).
-
-%%====================================================================
-%% API functions
-%%====================================================================
-
-start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
-
-%%====================================================================
-%% Supervisor callbacks
-%%====================================================================
-
-%% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
-init([]) ->
-    {ok, { {one_for_all, 0, 1}, []} }.
-
-%%====================================================================
-%% Internal functions
-%%====================================================================
+loop({M, F, A}) ->
+    Pid = apply(M, F, A),
+    receive
+        {'EXIT', _From, shutdown} ->
+            exit(shutdown);
+        {'EXIT', Pid, Reason} ->
+            io:format("Process ~p exited for reason ~p~n", [Pid, Reason]),
+            loop({M, F, A})
+    end.
